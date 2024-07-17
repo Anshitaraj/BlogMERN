@@ -1,17 +1,29 @@
+/*import {format} from "date-fns";
+
+          <time>{format(new Date(createdAt),'MMM d, yyyy HH:mm ')}</time>*/
 import {format} from "date-fns";
-export default function Post({title,summary,cover,content,createdAt}){
-    return(
-        <div className="entry">
-        <div className="image"><img src="https://images.newscientist.com/wp-content/uploads/2024/05/24140958/sei204548736.png?width=900 " alt=""/></div>
-        
+import {Link} from "react-router-dom";
+export default function Post({_id,title,summary,cover,content,createdAt,author}) {
+return (
+    <div className="post">
+      <div className="image">
+        <Link to={`/post/${_id}`}>
+          <img src={'http://localhost:4000/'+cover} alt=""/>
+        </Link>
+      </div>
       <div className="texts">
-      <h2>{title}</h2>
-      <p className="info">
-        <a className="author">Anshita Raj</a>
-        <time> {format(new Date(createdAt),'MMM d, yyyy HH:mm ')}</time>
-      </p>
-      <p className="summary">{summary}</p>
+        <Link to={`/post/${_id}`}>
+        <h2>{title}</h2>
+        </Link>
+        <p className="info">
+          <a className="author">{author.username}</a>
+          <time>{format(new Date(createdAt),'MMM d, yyyy HH:mm ')}</time>
+        </p>
+        <p className="summary">{summary}</p>
       </div>
-      </div>
-    );
+    </div>
+  );
 }
+  
+
+
