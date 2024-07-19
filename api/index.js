@@ -18,7 +18,7 @@ app.use(cookieParser());
 app.use('/uploads',express.static(__dirname+ '/uploads'));
  mongoose.connect('mongodb+srv://BloggingApp:26anshitablog@cluster0.k5ckxvu.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0');
 
-app.post('/register', async(req,res) =>{
+/*app.post('/register', async(req,res) =>{
     const{username,password} = req.body;
     try{
         const userDoc= await User.create({username,
@@ -29,9 +29,23 @@ app.post('/register', async(req,res) =>{
         console.log(e);
 res.status(400).json(e);
     }
+    });*/
+
+
+    app.post('/register', async (req, res) => {
+      const { username, password } = req.body;
+      try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const user = new User({ username, password: hashedPassword });
+        await user.save();
+        res.json('User created successfully');
+      } catch (e) {
+        console.error(`Error creating user: ${e}`);
+        res.status(400).json(e);
+      }
     });
     
-  app.post('/login', async(req,res)=>{
+  /*app.post('/login', async(req,res)=>{
 const {username,password}=req.body;
 try{
 const userDoc= await User.findOne({username});
@@ -56,7 +70,41 @@ catch(e){
     console.log(e);
     res.status(400).json(e);
 }
+  });*/
+  
+  app.post('/login', async (req, res) => {
+    const { username, password } = req.body;
+    try {
+      const userDoc = await User.findOne({ username });
+      if (!userDoc) {
+        return res.status(400).json('User not found');
+      }
+  
+      const passOk = await bcrypt.compare(password, userDoc.password);
+      if (passOk) {
+        // Logged in
+        jwt.sign({ username, id: userDoc._id }, secret, {}, (err, token) => {
+          if (err) {
+            console.error(`Error generating token: ${err}`);
+            throw err;
+          }
+          res.cookie('token', token).json({
+            id: userDoc._id,
+            username,
+          });
+        });
+      } else {
+        res.status(400).json('wrong credentials');
+      }
+    } catch (e) {
+      console.error(`Error logging in: ${e}`);
+      res.status(400).json(e);
+    }
   });
+
+
+
+ 
     app.get('/profile',(req,res) =>{
         const{token}=req.cookies;
         jwt.verify(token,secret,{},(err,info) =>{
